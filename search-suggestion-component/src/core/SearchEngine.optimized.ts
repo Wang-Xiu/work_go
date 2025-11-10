@@ -33,7 +33,7 @@ export class SearchEngine {
   private cache: LRUCache<string, MatchResult[]>
   
   /** 分类索引（核心优化：O(1)查找） */
-  private categoryIndex: Map<string, SuggestionItem[]> = new Map()
+  private categoryIndex: Map<string, SuggestionItem[]>
   
   // ============================================================
   // 🎯 构造函数
