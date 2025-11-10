@@ -1,0 +1,78 @@
+# 应用级统一配置
+app:
+  name: "working-project"
+  version: "1.0.0"
+  env: "development"  # development, staging, production
+
+# Redis配置（统一管理）
+redis:
+  # 默认Redis实例（用于限流、统计等）
+  default:
+    host: localhost
+    port: 6379
+    password: ""  # 支持KMS加密: kms://encrypted_value
+    db: 0
+    pool_size: 20
+    min_idle_conns: 5
+    max_retries: 3
+    dial_timeout: 5s
+    read_timeout: 3s
+    write_timeout: 3s
+
+  # 缓存专用Redis实例（可选）
+  cache:
+    host: localhost
+    port: 6379
+    password: ""
+    db: 1
+    pool_size: 10
+    min_idle_conns: 3
+    max_retries: 3
+    dial_timeout: 5s
+    read_timeout: 3s
+    write_timeout: 3s
+
+# 中间件配置
+middleware:
+  # 限流配置
+  ratelimit:
+    enabled: true
+    redis_name: "default"  # 引用上面redis配置的名称
+    rules:
+      - path: "/api/*"
+        limit_per_second: 10
+        limit_per_minute: 100
+        burst_size: 20
+
+      - path: "/api/login"
+        limit_per_second: 1
+        limit_per_minute: 5
+        burst_size: 2
+
+      - path: "/api/register"
+        limit_per_second: 1
+        limit_per_minute: 3
+        burst_size: 1
+
+      - path: "/callback/payment/*"
+        limit_per_second: 100
+        limit_per_minute: 1000
+        burst_size: 200
+
+    default_rule:
+      path: "*"
+      limit_per_second: 5
+      limit_per_minute: 50
+      burst_size: 10
+
+  # 统计配置
+  stats:
+    enabled: true
+    redis_name: "default"  # 引用上面redis配置的名称
+    enable_path_stats: false
+    retention_days: 90
+    exclude_paths:
+      - /health
+      - /metrics
+      - /favicon.ico
+      - /robots.txt

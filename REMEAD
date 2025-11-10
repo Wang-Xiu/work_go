@@ -1,0 +1,137 @@
+# 服务约定
+
+> 项目一些设计的约定
+
+**最后更新**：2025年08月12日  
+
+## 目录
+### domain
+| 目录          | 说明                                                            |
+|-------------|---------------------------------------------------------------|
+| entity      | 定义实体，通常是和数据库表对应的结构体，每个实体一个go文件                                |
+| repository  | 定义实体对应的仓储接口，通常是对应数据库表的增删改查，接口定义和实现放到同一个文件，每个实体一个go文件          |
+| cache       | 定义实体的缓存接口，接口定义和实现放到同一个文件，每个实体一个go文件                           |
+| service     | 定义业务接口，接口定义和实现放到同一个文件，可以按照功能分为多个service文件                     |
+| valueobject | 定义值对象，通常是给repository、service使用, 可以按照功能分为多个文件                  |
+| errorx      | 定义业务错误，需要使用common包的CommonError定义，每个错误码的范围请查看【文档】目录下的【错误码】内容   |
+| event       | 定义事件，使用github.com/asaskevich/EventBus这个框架                     |
+| extension   | 定义扩展点，比如用户能不能绑定手机，每个业务检查逻辑可能不一样，可以在extension定义检查接口，每个业务提供具体实现 |
+| handler     | 定义给前端用的http接口，这个目录到时每个基础组件拆到单独工程后应该移到domain外面                 |
+| proto       | 定义http接口的出入参，这个目录到时每个基础组件拆到单独工程后应该移到domain外面                  |
+| pb     | proto生成代码的文件夹                 |
+
+### 其他
+
+ - `/common/sys.go` 整个服务级别的变量，需要全局跨domain共享
+ - `/common/base` 跨domain的公共常量、枚举
+ - `/common/util` 跨domain的工具类（时间操作、数学计算）
+ - `/config` 配置文件及解析
+ - `/deployment` 测试和开发环境需要的数据库、redis等部署文件，可以忽略。实际开发可以直连测试环境。
+ - `/job` 服务会有一些定期任务
+ - ``
+ - ``
+ - ``
+---
+
+## 服务API 路由约定
+
+不同业务可以用不同域名，但也可用相同域名+路径区分，路径规范是:https://域名/业务/*,
+比如LOHA的登录接口可以设计为 `https://www.douyu.com/loha/api/login` 
+但上层Nginx在做流量分发时会trim掉前面的业务名，后端收到的实际路径是`/api/login`
+
+每个业务对应的服务，接口分三类：
+ - API 对外提供更客户端交互的接口
+ - > 这类API统一以`/api/`开头，日常业务开发，更新维护频繁
+ - Admin 对公司内部运营产品提供后台管理功能的接口
+ - > 这类以`/admin/`开头，这类不对外暴露，做严格权限管理
+ - Callback 提供给第三方回调的接口（游戏、支付、登录）
+ - > 这类以 `/callback/`开头，这类服务高可用
+
+
+## 服务参数规范
+ 
+
+### 通用参数的命名和意义
+
+| 参数名称        | 类型        | 必填 | 默认值    | 描述说明                                 |
+|-------------|-----------|----|--------|--------------------------------------|
+| `device_id` | `string`  | 是  | `""`   | 客户端唯一标识                              |
+| `tz`        | `string`  | 否  | `true` | 时区偏移值，默认GMT0，比如上海传入GMT+8，美国阿拉斯加GMT-8 |
+| `lang`      | `string` | 否  | `en`   | 语言代码                                 |
+| `xxx`       | `string`  | 否  | `xxx`  | xxx                                  |
+
+## 单元测试
+### repository
+使用容器化的方式集成mysql来支持单元测试，使用框架：https://github.com/testcontainers/testcontainers-go
+使用示例：
+``` go
+import (
+	"context"
+	"testing"
+
+	mysqltest "working-project/common/test/mysql"
+	"working-project/domain/user/entity"
+	repo "working-project/domain/user/repository"
+	
+	"github.com/stretchr/testify/assert"
+)
+
+func TestUserRepository_CreateAndGet(t *testing.T) {
+	t.Parallel()
+	// 获取容器化的测试DB
+	db := mysqltest.GetGormDB(t)
+	// 向repo注入DB实例
+	r := repo.NewUserRepository(db)
+	
+	ctx := context.Background()
+	u := &entity.User{PhoneCode: "+86", Phone: "13800000000", Email: "u@example.com"}
+	err := r.Create(ctx, u)
+	assert.NoError(t, err)
+	assert.NotZero(t, u.ID)
+}
+```
+说明：
+1.testcontainers默认是每跑一个单元测试就启动一个容器，完成后再销毁容器以达到清除资源的目的。
+但我们目前所有的模块都在一个工程里，每次都执行创建-销毁的话跑单元测试速度会比较耗时，所以启用了复用容器的特性(即多个测试用例都是用同一个容器)，
+但不会每个测试用例执行后都去做清除数据的操作，而是在mysqltest.GetGormDB(t)时执行test_config.yml里面定义的sql脚本，
+以达到清除数据和重新建表的目的， 因此需要保证sql脚本包含drop table的操作。
+2.首次跑单元测试因为要下载镜像，需要等待一些时间。
+3.需要确保本地启动了docker服务
+
+
+### cache
+
+#### 集群共享缓存
+使用Redis
+
+#### 单机缓存
+
+- 推荐：groupcache
+
+>> 支持设置最大缓存数量、缓存时间、过期策略、异步自动清理过期数据
+
+- 本地变量缓存
+
+
+
+
+### 事件发布与订阅
+#### 安全性要求极高的事件
+
+#### 安全性要求不高的事件
+
+
+
+## 功能特性
+本项目提供以下功能：
+
+- ✅ **高性能处理** - 
+- 🌐 **跨平台支持** - 
+- 🔒 **安全加密** - 
+- 📊 **实时分析** - 
+- 🤖 **AI集成** - 
+
+```diff
++ 新增特性：xxxx (v1.2)
+- 已弃用：旧版API接口 (v1.0)
+
