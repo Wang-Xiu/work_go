@@ -10,6 +10,8 @@ export interface SuggestionItem {
   hotScore: number
   /** 分类 */
   category: string
+  /** 父分类（用于层级分类） */
+  parentCategory?: string
   /** 搜索关键词（用于匹配） */
   keywords?: string[]
   /** 拼音（自动生成） */
@@ -55,6 +57,16 @@ export interface MatchResult {
 }
 
 /**
+ * 搜索结果（带分类统计）
+ */
+export interface SearchResult {
+  /** 匹配结果列表 */
+  results: MatchResult[]
+  /** 分类统计 */
+  categoryStats?: CategoryStats[]
+}
+
+/**
  * 搜索配置
  */
 export interface SearchConfig {
@@ -78,8 +90,14 @@ export interface SearchConfig {
  * 搜索选项
  */
 export interface SearchOptions {
-  /** 筛选分类 */
+  /** 筛选单个分类 */
   category?: string
+  /** 筛选多个分类（扩展功能） */
+  categories?: string[]
+  /** 是否包含子分类（层级分类） */
+  includeSubCategories?: boolean
+  /** 是否返回分类统计 */
+  includeCategoryStats?: boolean
   /** 自定义权重 */
   customWeight?: {
     matchWeight?: number
