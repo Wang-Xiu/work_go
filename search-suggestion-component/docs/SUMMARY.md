@@ -232,6 +232,14 @@ console.log(result.categoryStats)   // CategoryStats[]
 - 多分类筛选提升67%
 - 内存优化90%
 
+### 详细注释说明
+👉 查看 `docs/DETAILED_COMMENTS_GUIDE.md`
+- 注释覆盖率62%（~700行注释）
+- 4个注释层次（文件/方法/代码块/行）
+- 包含性能分析和优化原理
+- 问答式注释，易于理解
+- 可作为教学材料
+
 ### 高级功能详解
 👉 查看 `docs/ADVANCED_FEATURES.md`
 - 多分类筛选使用指南
