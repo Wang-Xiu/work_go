@@ -1,0 +1,438 @@
+/* ===== 搜索建议组件样式 ===== */
+
+.search-suggestion {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+               'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* ===== 分类筛选 ===== */
+
+.category-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.category-filter::-webkit-scrollbar {
+  height: 4px;
+}
+
+.category-filter::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 2px;
+}
+
+.category-button {
+  padding: 6px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.category-button:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.category-button.active {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: white;
+}
+
+/* ===== 搜索输入框 ===== */
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.3s;
+}
+
+.search-input-container:focus-within {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+}
+
+.search-icon {
+  margin-left: 12px;
+  font-size: 18px;
+  color: #999;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #333;
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: #bbb;
+}
+
+.clear-button {
+  margin-right: 12px;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.clear-button:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.search-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 12px;
+  font-size: 12px;
+  color: #999;
+}
+
+.hint-keys {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: #bbb;
+}
+
+/* ===== 建议列表 ===== */
+
+.suggestion-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* ===== 空状态 ===== */
+
+.suggestion-list.empty {
+  padding: 40px 20px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #999;
+}
+
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-message p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  color: #bbb;
+  font-size: 12px;
+}
+
+/* ===== 建议项 ===== */
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: #f7f9fc;
+}
+
+.suggestion-item.selected {
+  background: #e6f7ff;
+  border-left: 3px solid #1890ff;
+  padding-left: 13px;
+}
+
+.suggestion-main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.suggestion-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-text {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-text mark {
+  background: #fff566;
+  color: #333;
+  font-weight: 600;
+  padding: 2px 0;
+  border-radius: 2px;
+}
+
+.suggestion-description {
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.suggestion-category {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* 不同匹配类型的分类标签颜色 */
+.suggestion-category.match-type-prefix {
+  background: #d4f7dc;
+  color: #1b5e20;
+}
+
+.suggestion-category.match-type-contains {
+  background: #fff4d6;
+  color: #7f6b00;
+}
+
+.suggestion-category.match-type-pinyin {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+
+.suggestion-category.match-type-pinyin-first {
+  background: #f3e5f5;
+  color: #4a148c;
+}
+
+.suggestion-category.match-type-fuzzy {
+  background: #f5f5f5;
+  color: #616161;
+}
+
+/* ===== 调试信息 ===== */
+
+.suggestion-debug {
+  display: flex;
+  gap: 4px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.match-type-badge {
+  padding: 2px 6px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.score-badge {
+  padding: 2px 6px;
+  background: #fff3e0;
+  color: #e65100;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: help;
+}
+
+/* ===== 响应式设计 ===== */
+
+@media (max-width: 768px) {
+  .search-suggestion {
+    max-width: 100%;
+  }
+  
+  .search-input {
+    font-size: 16px; /* 防止iOS自动缩放 */
+  }
+  
+  .suggestion-list {
+    max-height: 300px;
+  }
+  
+  .category-filter {
+    gap: 6px;
+  }
+  
+  .category-button {
+    padding: 5px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ===== 深色模式支持 ===== */
+
+@media (prefers-color-scheme: dark) {
+  .search-suggestion {
+    color-scheme: dark;
+  }
+  
+  .search-input-container {
+    background: #1f1f1f;
+    border-color: #404040;
+  }
+  
+  .search-input {
+    color: #e0e0e0;
+  }
+  
+  .search-input::placeholder {
+    color: #666;
+  }
+  
+  .suggestion-list {
+    background: #1f1f1f;
+    border-color: #404040;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .suggestion-item {
+    border-bottom-color: #2f2f2f;
+  }
+  
+  .suggestion-item:hover {
+    background: #2a2a2a;
+  }
+  
+  .suggestion-item.selected {
+    background: #1a3a52;
+  }
+  
+  .suggestion-text {
+    color: #e0e0e0;
+  }
+  
+  .suggestion-icon {
+    background: #2a2a2a;
+  }
+  
+  .category-button {
+    background: #1f1f1f;
+    border-color: #404040;
+    color: #999;
+  }
+  
+  .category-button.active {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: white;
+  }
+}
+
+/* ===== 打印样式 ===== */
+
+@media print {
+  .search-suggestion {
+    display: none;
+  }
+}
+

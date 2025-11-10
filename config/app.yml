@@ -8,10 +8,10 @@ app:
 redis:
   # 默认Redis实例（用于限流、统计等）
   default:
-    host: localhost
-    port: 6379
-    password: ""  # 支持KMS加密: kms://encrypted_value
-    db: 0
+    host: 172.18.26.11
+    port: 6394
+    password: "kms://111enozq"  # 支持KMS加密: kms://encrypted_value
+    db: 1
     pool_size: 20
     min_idle_conns: 5
     max_retries: 3
@@ -21,9 +21,9 @@ redis:
 
   # 缓存专用Redis实例（可选）
   cache:
-    host: localhost
-    port: 6379
-    password: ""
+    host: 172.18.26.11
+    port: 6394
+    password: "kms://111enozq"
     db: 1
     pool_size: 10
     min_idle_conns: 3

@@ -53,6 +53,7 @@ func main() {
 	if err := configLoader.LoadFromFile(ctx, "config/app.yml", &appConfig); err != nil {
 		log.Fatalf("❌ 加载配置文件失败: %v", err)
 	}
+
 	log.Println("✅ 配置加载成功（已自动解密KMS加密字段）")
 
 	// ============================================================

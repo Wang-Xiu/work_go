@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strings"
 
-	"github.com/spf13/cast"
-	"gopkg.in/yaml.v3"
 	"working-project/common/kms"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Loader 配置加载器
@@ -91,21 +90,38 @@ func (l *Loader) decryptValue(ctx context.Context, v reflect.Value) error {
 		iter := v.MapRange()
 		for iter.Next() {
 			mapValue := iter.Value()
-			// map的value可能不可直接设置，需要特殊处理
-			if mapValue.Kind() == reflect.String && mapValue.CanInterface() {
+			mapKey := iter.Key()
+
+			// map的value可能是字符串、结构体或指针
+			if mapValue.Kind() == reflect.String {
+				// 如果是字符串，检查是否需要解密
 				strValue := mapValue.String()
-				decryptStr, _ := l.kmsManager.DecryptIfNeeded(ctx, "")
-				if strings.HasPrefix(strValue, cast.ToString(decryptStr)) {
-					decrypted, err := l.kmsManager.DecryptIfNeeded(ctx, strValue)
-					if err != nil {
-						return fmt.Errorf("failed to decrypt map value: %w", err)
-					}
-					v.SetMapIndex(iter.Key(), reflect.ValueOf(decrypted))
+				decrypted, err := l.kmsManager.DecryptIfNeeded(ctx, strValue)
+				if err != nil {
+					return fmt.Errorf("failed to decrypt map value: %w", err)
 				}
-			} else if mapValue.Kind() == reflect.Ptr || mapValue.Kind() == reflect.Struct {
+				// 如果解密后的值不同，更新map
+				if decrypted != strValue {
+					v.SetMapIndex(mapKey, reflect.ValueOf(decrypted))
+				}
+			} else if mapValue.Kind() == reflect.Ptr {
+				// 如果是指针，递归处理指向的值
 				if err := l.decryptValue(ctx, mapValue); err != nil {
 					return err
 				}
+			} else if mapValue.Kind() == reflect.Struct {
+				// 如果是结构体，需要创建可设置的副本进行解密，然后更新map
+				// 因为map的value不可直接设置，需要创建新的结构体
+				structValue := reflect.New(mapValue.Type()).Elem()
+				structValue.Set(mapValue)
+
+				// 递归处理结构体的字段
+				if err := l.decryptValue(ctx, structValue); err != nil {
+					return err
+				}
+
+				// 更新map中的值
+				v.SetMapIndex(mapKey, structValue)
 			}
 		}
 

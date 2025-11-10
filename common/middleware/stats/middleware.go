@@ -2,6 +2,8 @@ package stats
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -52,18 +54,21 @@ func Middleware(tracker *Tracker) gin.HandlerFunc {
 
 		// ========================================
 		// 👇 在这里实现你的代码
-		//没uid的接口统一使用ip做标识，否则使用用户id做标识(暂定请求头Authorization为用户标识)
-		var visitorID string
-		urlPath := c.Request.URL.Path
-		if urlPath == "/api/login" {
+		// 获取访客唯一标识：优先使用用户ID，未登录则使用IP
+		visitorID := c.GetHeader("Authorization")
+		if visitorID == "" {
+			// 未登录用户，使用IP作为标识
 			visitorID = getClientIP(c)
-		} else {
-			visitorID = c.GetHeader("Authorization")
 		}
 
-		err := tracker.Track(c, visitorID, urlPath)
+		// 获取访问路径（不包含query参数）
+		urlPath := c.Request.URL.Path
+
+		// 记录统计（注意：传入context.Context而不是gin.Context）
+		err := tracker.Track(c.Request.Context(), visitorID, urlPath)
 		if err != nil {
-			fmt.Printf("[Stats] Track failed: %v\n", err)
+			// 统计失败不应影响业务，只打印日志
+			fmt.Printf("[Stats] Track failed: %v, path: %s, visitor: %s\n", err, urlPath, visitorID)
 		}
 
 		// ========================================
@@ -79,12 +84,15 @@ func Middleware(tracker *Tracker) gin.HandlerFunc {
 // getClientIP 获取客户端IP
 // 从X-Forwarded-For或RemoteAddr获取
 func getClientIP(c *gin.Context) string {
-	// 1. 尝试从X-Forwarded-For获取
+	// 1. 尝试从X-Forwarded-For获取（可能被伪造，需要配合可信代理列表使用）
 	xff := c.GetHeader("X-Forwarded-For")
 	if xff != "" {
+		// X-Forwarded-For格式: client, proxy1, proxy2
 		// 取第一个IP
-		// 注意：这里应该配合可信代理验证使用（参考ratelimit模块）
-		return xff
+		parts := splitAndTrim(xff, ",")
+		if len(parts) > 0 && parts[0] != "" {
+			return parts[0]
+		}
 	}
 
 	// 2. 尝试从X-Real-IP获取
@@ -93,6 +101,19 @@ func getClientIP(c *gin.Context) string {
 		return xRealIP
 	}
 
-	// 3. 使用RemoteAddr
+	// 3. 使用RemoteAddr（Gin的ClientIP方法已处理端口号）
 	return c.ClientIP()
+}
+
+// splitAndTrim 分割字符串并去除空格
+func splitAndTrim(s, sep string) []string {
+	parts := strings.Split(s, sep)
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
