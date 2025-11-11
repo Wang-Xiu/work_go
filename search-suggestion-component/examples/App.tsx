@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { SearchSuggestion } from '../src/components/SearchSuggestion'
-import { suggestions } from '../src/data/suggestions'
+import { mockSuggestions } from '../src/data/suggestions'
 import { SuggestionItem } from '../src/types'
 import './App.css'
 
@@ -30,7 +30,7 @@ function App() {
       <main className="app-main">
         <div className="search-container">
           <SearchSuggestion
-            items={suggestions}
+            items={mockSuggestions}
             onSelect={handleSelect}
             onChange={handleChange}
             placeholder="试试输入：iPhone、美食、pg、hd..."
@@ -129,12 +129,12 @@ function App() {
           <h3>📊 数据统计</h3>
           <div className="stat-grid">
             <div className="stat-item">
-              <div className="stat-value">{suggestions.length}</div>
+              <div className="stat-value">{mockSuggestions.length}</div>
               <div className="stat-label">总数据量</div>
             </div>
             <div className="stat-item">
               <div className="stat-value">
-                {new Set(suggestions.map(s => s.category)).size}
+                {new Set(mockSuggestions.map(s => s.category)).size}
               </div>
               <div className="stat-label">分类数量</div>
             </div>
